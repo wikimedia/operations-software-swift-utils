@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+set -u
+
+dev=$1
+
+function ssd_add {
+  local dev=$1
+  local other=$2
+
+  while sleep 2s; do
+    [ -e /dev/$dev ] && break
+  done
+
+  sfdisk -d /dev/$other | sfdisk /dev/$dev
+  mdadm --add /dev/md0 /dev/${dev}1
+  mdadm --add /dev/md1 /dev/${dev}2
+  [ -e /dev/md2 ] && mdadm --add /dev/md2 /dev/${dev}4
+  mkfs.xfs -i size=512 -L swift-${dev}3 /dev/${dev}3
+  mount /srv/swift-storage/${dev}3
+}
+
+megacli -CfgForeign -Clear -a0
+megacli -CfgEachDskRaid0 WB RA Direct CachedBadBBU -a0
+
+case "$dev" in
+  sdm)
+      ssd_add "$dev" sdn
+  ;;
+  sdn)
+      ssd_add "$dev" sdm
+  ;;
+esac

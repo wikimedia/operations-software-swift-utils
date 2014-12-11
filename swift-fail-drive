@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+set -u
+
+dev=${1}
+dev=${dev##*/}
+scsi_id=$(readlink /sys/class/block/${dev}/device)
+scsi_id=${scsi_id##*/}
+slot=$(echo $scsi_id | cut -d: -f3)
+
+mountpoint -q /srv/swift-storage/${dev}* && umount /srv/swift-storage/${dev}*
+
+case "$dev" in
+  sdm|sdn)
+    mdadm /dev/md0 --fail /dev/${dev}1 --remove /dev/${dev}1
+    mdadm /dev/md1 --fail /dev/${dev}2 --remove /dev/${dev}2
+    [ -e /dev/md2 ] && mdadm /dev/md2 --fail /dev/${dev}4 --remove /dev/${dev}4
+  ;;
+esac
+
+megacli -PdLocate -start -physdrv \[32:${slot}\] -aALL >/dev/null 2>&1 || true
