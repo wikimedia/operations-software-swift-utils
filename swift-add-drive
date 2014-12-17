@@ -10,6 +10,7 @@ function ssd_add {
   local other=$2
 
   while sleep 2s; do
+    echo "waiting for /dev/$dev to appear"
     [ -e /dev/$dev ] && break
   done
 
