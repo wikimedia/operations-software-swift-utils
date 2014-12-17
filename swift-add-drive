@@ -21,6 +21,7 @@ function ssd_add {
   mount /srv/swift-storage/${dev}3
 }
 
+megacli -DiscardPreservedCache -Lall -a0
 megacli -CfgForeign -Clear -a0
 megacli -CfgEachDskRaid0 WB RA Direct CachedBadBBU -a0
 
