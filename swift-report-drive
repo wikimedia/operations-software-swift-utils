@@ -1,0 +1,77 @@
+#!/bin/bash
+## usage: swift-report-drive <drive device>
+
+set -e
+set -u
+
+dev=${1:-}
+dev=${dev##*/}
+scsi_id=$(readlink /sys/class/block/${dev}/device)
+scsi_id=${scsi_id##*/}
+slot=$(echo $scsi_id | cut -d: -f3)
+host=$(hostname --fqdn)
+
+subject="${host}: slot=${slot} dev=${dev} failed"
+kernel_message="$(grep -A2 -B2 ${dev} /var/log/kern.log | tail -20)"
+
+smartctl=""
+if [ -x /usr/sbin/smartctl ]; then
+  set +e
+  echo "running smartctl (timeout 15s)"
+  smartctl="$(timeout -k1 5 smartctl -d megaraid,${slot} -a /dev/${dev} 2>&1)"
+  set -e
+  if [ $? -ge 124 ]; then
+    smartctl="command timeout"
+  fi
+fi
+
+megacli=""
+if [ -x /usr/sbin/megacli ]; then
+  set +e
+  echo "running megacli (timeout 15s)"
+  megacli="$(timeout -k1 5 megacli -pdInfo -PhysDrv \[32:${slot}\] -aALL 2>&1)"
+  set -e
+  if [ $? -ge 124 ]; then
+    megacli="command timeout"
+  fi
+fi
+
+# ask the controller to locate the drive
+echo "locating the drive"
+megacli -PdLocate -start -physdrv \[32:${slot}\] -aALL >/dev/null 2>&1 || true
+
+
+to=task@phabricator.wikimedia.org
+
+site=$(cat /etc/wikimedia-site 2>/dev/null)
+if [ -z "$site" ]; then
+  echo "warning: unable to find site, defaulting to #operations"
+  projects="#operations"
+else
+  projects="#ops-${site}"
+fi
+
+body="
+projects: ${projects}
+
+\`slot=${slot} dev=${dev}\` has been reported failed, please replace.
+
+##/var/log/kern.log##
+\`\`\`
+$kernel_message
+\`\`\`
+
+##smartctl##
+\`\`\`
+$smartctl
+\`\`\`
+
+##megacli##
+\`\`\`
+$megacli
+\`\`\`
+"
+
+# mailx base64-encodes the body if the body isn't 7bit clean
+echo "$body" | cat -v | mail -r "${SUDO_USER:-root}@wikimedia.org" -s "$subject" $to
+echo "report sent to $to: $subject"
