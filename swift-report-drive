@@ -18,7 +18,7 @@ smartctl=""
 if [ -x /usr/sbin/smartctl ]; then
   set +e
   echo "running smartctl (timeout 15s)"
-  smartctl="$(timeout -k1 5 smartctl -d megaraid,${slot} -a /dev/${dev} 2>&1)"
+  smartctl="$(timeout -k1 5 smartctl -d megaraid,${slot} -a /dev/${dev} 2>&1 | grep -vi '^serial number:')"
   set -e
   if [ $? -ge 124 ]; then
     smartctl="command timeout"
@@ -29,7 +29,7 @@ megacli=""
 if [ -x /usr/sbin/megacli ]; then
   set +e
   echo "running megacli (timeout 15s)"
-  megacli="$(timeout -k1 5 megacli -pdInfo -PhysDrv \[32:${slot}\] -aALL 2>&1)"
+  megacli="$(timeout -k1 5 megacli -pdInfo -PhysDrv \[32:${slot}\] -aALL 2>&1 | grep -vi '^inquiry data:')"
   set -e
   if [ $? -ge 124 ]; then
     megacli="command timeout"
