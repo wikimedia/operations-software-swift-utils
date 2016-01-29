@@ -52,7 +52,7 @@ else
 fi
 
 body="
-projects: ${projects}
+!projects ${projects}
 
 \`slot=${slot} dev=${dev}\` has been reported failed, please replace.
 
