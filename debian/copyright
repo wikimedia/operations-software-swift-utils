@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: swift-utils
-Source: https://git.wikimedia.org/summary/operations%2Fsoftware%2Fswift-utils
+Source: https://phabricator.wikimedia.org/diffusion/OSSU/
 
 Files: *
 Copyright: 2014 Filippo Giunchedi <fgiunchedi@wikimedia.org>
