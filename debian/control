@@ -2,9 +2,9 @@ Source: swift-utils
 Section: misc
 Priority: extra
 Maintainer: Filippo Giunchedi <fgiunchedi@wikimedia.org>
-Homepage: https://git.wikimedia.org/summary/operations%2Fsoftware%2Fswift-utils
+Homepage: https://phabricator.wikimedia.org/diffusion/OSSU/
 Vcs-Git: https://gerrit.wikimedia.org/r/operations/software/swift-utils
-Vcs-Browser: https://git.wikimedia.org/summary/operations%2Fsoftware%2Fswift-utils
+Vcs-Browser: https://phabricator.wikimedia.org/diffusion/OSSU/repository/master/
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.5
 
